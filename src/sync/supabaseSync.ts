@@ -8,8 +8,10 @@ import type { AppData } from '../types';
  * 数据表用 app_state_cn，与澳洲版的 app_state 完全隔离，互不干扰。
  */
 
-export const DEFAULT_SUPABASE_URL = 'https://deojktpbhilpuroxbsrk.supabase.co';
-export const DEFAULT_SUPABASE_KEY = 'sb_publishable_EhjFp2SqoIFBVisUMMhzlA_fpnvzvmN';
+// 内置云同步服务（留空 = 不内置任何服务，请使用者在设置页填自己的 Supabase 项目）
+// 提示：Supabase 的 publishable key 设计上可放客户端，但这里仍不预置任何真实项目，避免占用他人额度。
+export const DEFAULT_SUPABASE_URL = '';
+export const DEFAULT_SUPABASE_KEY = '';
 
 const TABLE = 'app_state_cn';
 
