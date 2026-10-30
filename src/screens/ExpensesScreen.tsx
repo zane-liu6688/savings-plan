@@ -4,6 +4,8 @@ import { Screen, Card, LabeledInput, AddButton, CardItem, ResultBox, Stat } from
 import { useStore, useComputed } from '../store';
 import { colors, currency } from '../theme';
 
+const pct = (v: number, base: number): string => (base > 0 ? Math.max(0, (v / base) * 100).toFixed(0) : '0');
+
 export default function ExpensesScreen() {
   const expenses = useStore((s) => s.expenses);
   const addExpense = useStore((s) => s.addExpense);
@@ -46,7 +48,7 @@ export default function ExpensesScreen() {
     <Screen>
       <Card title="🏠 每月固定生活开销" accent="green">
         <Text style={styles.note}>
-          小提示：实际交的个税、五险一金也建议在这里加一项（例：交个税 500 / 社保 840），App 不会自动扣税，你自己记进来才算得准。
+          小提示：实际交的个税、五险一金（养老 / 医疗 / 失业 / 公积金）都算你自己的钱出去了，建议在这里各加一项（例：交个税 500、社保公积金 840）。App 不会自动扣税，你按真实金额记进来，攒钱数才准。
         </Text>
         <LabeledInput
           label="消费类目名称"
@@ -78,6 +80,8 @@ export default function ExpensesScreen() {
           <Stat label="每月固定生活总支出:" value={currency(r.totalExpMonth)} bold />
           <Stat label="全年生活总支出:" value={currency(r.totalExpMonth * 12)} bold />
           <Stat label="平摊每天生活成本:" value={currency(r.totalExpDay)} color={colors.red} bold />
+          <Stat label="你每天能赚:" value={currency(r.grossDay)} color={colors.primary} bold />
+          <Stat label="生活开销占日收入:" value={`${pct(r.totalExpDay, r.grossDay)}%`} color={colors.amberDark} bold />
         </ResultBox>
       </Card>
 
