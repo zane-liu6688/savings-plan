@@ -29,6 +29,17 @@ export default function JobsScreen() {
 
   return (
     <Screen>
+      <View style={styles.heroCard}>
+        <Text style={styles.heroLabel}>你平均每天能赚</Text>
+        <Text style={styles.heroNum}>{currency(r.grossDay)}</Text>
+        <Text style={styles.heroSub}>
+          全年收入 {currency(r.grossYear)} 摊到 365 天 · 每月 {currency(r.grossMonth)}
+        </Text>
+        <Text style={styles.heroHint}>
+          记住这个数字：买东西前除以「能用的天数」，就知道每天要多赚多少才不超支。
+        </Text>
+      </View>
+
       <Card title="💰 收入录入 (工资 + 兼职可叠加)">
         <LabeledInput label="收入来源名称" placeholder="例：工资 / 兼职 / 副业" value={name} onChange={setName} flex={2} />
         <View style={styles.seg}>
@@ -72,7 +83,7 @@ export default function JobsScreen() {
         </ResultBox>
 
         <ResultBox accent="amber">
-          <Text style={styles.tipTitle}>💡 税费参考（仅供参考，不参与攒钱计算）</Text>
+          <Text style={styles.tipTitle}>💡 税费参考（含五险一金，仅供参考、不参与计算）</Text>
           <Stat label="五险一金(估值):" value={currency(r.socialYear)} color={colors.amberDark} />
           <Stat label="专项附加扣除:" value={currency(r.specialYear)} color={colors.amberDark} />
           <Stat label="可能要交的个税(全年):" value={currency(r.taxRefYear)} color={colors.red} bold />
@@ -108,4 +119,22 @@ const styles = StyleSheet.create({
   empty: { color: colors.sub, paddingVertical: 10 },
   tipTitle: { fontSize: 14, fontWeight: '800', color: colors.amberDark, marginBottom: 6 },
   tipNote: { fontSize: 12, color: colors.sub, marginTop: 8, lineHeight: 18 },
+
+  heroCard: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 3,
+  },
+  heroLabel: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '600' },
+  heroNum: { color: '#fff', fontSize: 38, fontWeight: '900', marginVertical: 6 },
+  heroSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13 },
+  heroHint: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 12,
+    marginTop: 10,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
 });
