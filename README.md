@@ -52,11 +52,22 @@ npx eas build -p android --profile preview
 
 > 本项目 `app.json` 中没有写死 EAS `projectId`，首次打包时 EAS 会提示为这个项目新建一个云端项目，按提示确认即可。
 
-## 云同步（可选）
+## 云同步（可选，两种任选）
 
-内置了 Supabase 服务地址与 publishable key，App 里注册 / 登录就能同步，不需要自己填配置。
+### 方案一：坚果云 WebDAV（国内免费，推荐）
 
-如需在自己的 Supabase 项目里用，先到 **SQL Editor** 执行一次 [`src/sync/schema.sql`](src/sync/schema.sql)（建 `app_state_cn` 表 + 行级权限），再在设置页把 URL / Key 换成你自己的。
+免费额度长期够用（每月 1GB 上传，账本文件只有几十 KB），不用备案、不用服务器。
+
+1. 注册 [坚果云](https://www.jianguoyun.com/)
+2. 网页版 → 账户信息 → 安全选项 → **添加应用**，得到一个「应用密码」（不是登录密码）
+3. App 设置页 → 坚果云同步 → 填 WebDAV 地址（默认 `https://dav.jianguoyun.com/dav/`）、邮箱、应用密码
+4. 点「测试连接」→「上传到坚果云」；换手机后点「从坚果云恢复」
+
+同步文件是网盘根目录的 `cunqian-backup.json`，坚果云自带历史版本，误覆盖也能找回。
+
+### 方案二：Supabase（备用，海外节点）
+
+内置了服务地址与 publishable key，注册 / 登录即可同步。若要在自己的项目里用，先到 SQL Editor 执行 [`src/sync/schema.sql`](src/sync/schema.sql)（建 `app_state_cn` 表 + 行级权限），再把 URL / Key 换成自己的。
 
 ## 数据说明
 
