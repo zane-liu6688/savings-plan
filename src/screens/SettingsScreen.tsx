@@ -310,6 +310,7 @@ export default function SettingsScreen() {
         <Text style={styles.note}>
           国内网盘，免费额度长期够用（每月 1GB 上传，账本只有几十 KB），不用备案、不用服务器。
           {'\n'}玩法：电脑打开坚果云网页版 → 账户信息 → 安全选项 → 添加应用 → 得到一个「应用密码」→ 填到下面。
+          {'\n'}地址默认带「我的坚果云」目录（坚果云根目录不允许直接写文件）。
         </Text>
         <LabeledInput
           label="WebDAV 地址"
