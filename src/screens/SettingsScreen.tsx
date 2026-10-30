@@ -32,8 +32,8 @@ export default function SettingsScreen() {
 
   // 坚果云 WebDAV 同步
   const [davUrl, setDavUrl] = useState(webdav.DEFAULT_WEBDAV_URL);
-  const [davUser, setDavUser] = useState('');
-  const [davPass, setDavPass] = useState('');
+  const [davUser, setDavUser] = useState(webdav.DEFAULT_WEBDAV_USER);
+  const [davPass, setDavPass] = useState(webdav.DEFAULT_WEBDAV_PASS);
   const [davStatus, setDavStatus] = useState('未配置');
 
   useEffect(() => {
@@ -306,7 +306,7 @@ export default function SettingsScreen() {
         />
       </Card>
 
-      <Card title="☁️ 坚果云同步（国内免费·推荐）" accent="cyan">
+      <Card title="☁️ 坚果云同步（运营商：坚果云 · 国内 · 免费）" accent="cyan">
         <Text style={styles.note}>
           国内网盘，免费额度长期够用（每月 1GB 上传，账本只有几十 KB），不用备案、不用服务器。
           {'\n'}玩法：电脑打开坚果云网页版 → 账户信息 → 安全选项 → 添加应用 → 得到一个「应用密码」→ 填到下面。
@@ -338,7 +338,7 @@ export default function SettingsScreen() {
         </View>
       </Card>
 
-      <Card title="云同步（Supabase，备用方案）" accent="primary">
+      <Card title="云同步（运营商：Supabase · 海外节点 · 备用）" accent="primary">
         <Text style={styles.note}>
           云同步服务已内置，直接用邮箱注册 / 登录即可，两台手机登同一账号就能共享数据。下面的地址和 Key 已自动填好，不用动它。
         </Text>
