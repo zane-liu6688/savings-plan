@@ -13,6 +13,13 @@ const KEY_USER = 'cunqian_webdav_user';
 const KEY_PASS = 'cunqian_webdav_pass';
 
 export const DEFAULT_WEBDAV_URL = 'https://dav.jianguoyun.com/dav/';
+/**
+ * 可选：预填账号信息。
+ * ⚠️ 公开仓库里请保持为空——坚果云应用密码能访问你整个网盘，
+ * 一旦提交到公开仓库就等于公开了。需要预填时只改本地打包副本。
+ */
+export const DEFAULT_WEBDAV_USER = '';
+export const DEFAULT_WEBDAV_PASS = '';
 const FILE_NAME = 'cunqian-backup.json';
 
 export interface WebdavConfig {
