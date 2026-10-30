@@ -15,6 +15,15 @@ export default function DashboardScreen() {
   const delYear = useStore((s) => s.delYear);
 
   const [yearLabel, setYearLabel] = useState('');
+  const savedAmount = useStore((s) => s.savedAmount);
+  const setSavedAmount = useStore((s) => s.setSavedAmount);
+  const [savedText, setSavedText] = useState(savedAmount > 0 ? String(savedAmount) : '');
+
+  const onSavedChange = (t: string) => {
+    setSavedText(t);
+    const v = parseFloat(t);
+    setSavedAmount(!isNaN(v) && v >= 0 ? v : 0);
+  };
   const { width } = useWindowDimensions();
   const isSmall = width < 380;
 
@@ -60,6 +69,43 @@ export default function DashboardScreen() {
           <Text style={styles.resetBtnText}>清空并重置所有数据</Text>
         </Pressable>
       </View>
+
+      {/* 攒钱进度：已存了多少 */}
+      <Card title="攒钱进度" accent="green">
+        <Text style={styles.hint}>每次存完钱回来改一下这个数字，进度条就会更新。</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="现在账户里已经攒了多少？"
+          placeholderTextColor={colors.sub}
+          value={savedText}
+          onChangeText={onSavedChange}
+          keyboardType="numeric"
+        />
+        <RatioBar
+          label="目标完成度"
+          value={r.savedAmount}
+          max={r.totalGoal || 1}
+          color={colors.green}
+          valueText={`${(r.savingsProgress * 100).toFixed(0)}%`}
+        />
+        <Stat label="已攒:" value={currency(r.savedAmount)} color={colors.green} bold />
+        <Stat label="目标:" value={currency(r.totalGoal)} />
+        <Stat label="还差:" value={currency(r.remainingToGoal)} color={colors.red} bold />
+        <Stat
+          label="按现在的速度:"
+          value={
+            r.remainingToGoal <= 0
+              ? '🎉 已经达成目标了'
+              : r.daysToGoal < 0
+              ? '每天攒不下钱，先压缩开销'
+              : `还要 ${Math.ceil(r.daysToGoal)} 天（约 ${(r.daysToGoal / 30.4).toFixed(1)} 个月）`
+          }
+          color={colors.primary}
+        />
+        <Text style={styles.subNote}>
+          财务健康小建议：账户里至少留 {currency(r.totalExpMonth * 3)}（3 个月生活费）当应急金，你现在够 {r.emergencyMonths.toFixed(1)} 个月。
+        </Text>
+      </Card>
 
       {/* 每天收支对比：一眼看出会不会花超 */}
       <Card title="每天收支对比" accent="cyan">
