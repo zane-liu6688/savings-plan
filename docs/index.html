@@ -220,7 +220,8 @@
     <h2>云同步（GitHub 私有仓库 · 永久免费）</h2>
     <div class="note">
       坚果云是网盘协议，浏览器出于跨域安全不允许网页直接读写，所以网页版改用 GitHub 仓库当云盘：
-      数据存进你自己的**私有仓库**里的一个 JSON 文件，免费、永久、自带历史版本，换设备填同样配置就能恢复。
+      数据存进你自己的私有仓库里的一个 JSON 文件，免费、永久、自带历史版本，换设备填同样配置就能恢复。<br>
+      令牌只保存在这台设备的浏览器里，填一次就行；只有「清除浏览器数据 / 换浏览器 / 换设备」时才需要重填，令牌本身不会过期。
     </div>
     <label>仓库（账号/仓库名）</label><input id="ghRepo" placeholder="zane-liu6688/savings-data" value="zane-liu6688/savings-data">
     <div class="row">
@@ -627,6 +628,10 @@ function ghFill() {
   $('ghBranch').value = GH.branch || 'main';
   $('ghPath').value = GH.path || 'data.json';
   $('ghToken').value = GH.token || '';
+  const last = localStorage.getItem(GHKEY + '_last');
+  if (GH.token) {
+    ghMsg(last ? `配置已保存在本机浏览器，上次上传：${last}` : '配置已保存在本机浏览器，还没上传过');
+  }
 }
 const ghMsg = (m) => { $('ghStatus').textContent = m; };
 
@@ -658,8 +663,11 @@ async function ghUpload() {
     const body = { message: `backup ${new Date().toLocaleString('zh-CN')}`, content: b64encode(JSON.stringify(S, null, 2)), branch: GH.branch };
     if (sha) body.sha = sha;
     const r2 = await fetch(ghUrl(), { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) });
-    if (r2.ok) ghMsg(`✅ 已上传（${new Date().toLocaleTimeString('zh-CN')}）`);
-    else { const t = await r2.text(); ghMsg(`上传失败（HTTP ${r2.status}）：${t.slice(0, 120)}`); }
+    if (r2.ok) {
+      const t = new Date().toLocaleString('zh-CN');
+      localStorage.setItem(GHKEY + '_last', t);
+      ghMsg(`✅ 已上传（${t}）`);
+    } else { const t = await r2.text(); ghMsg(`上传失败（HTTP ${r2.status}）：${t.slice(0, 120)}`); }
   } catch (e) { ghMsg('上传失败：' + e); }
 }
 
