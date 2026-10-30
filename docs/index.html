@@ -216,6 +216,26 @@
     <div class="note" id="backupStatus"></div>
   </div>
 
+  <div class="card" style="border-left-color:#8b5cf6">
+    <h2>云同步（GitHub 私有仓库 · 永久免费）</h2>
+    <div class="note">
+      坚果云是网盘协议，浏览器出于跨域安全不允许网页直接读写，所以网页版改用 GitHub 仓库当云盘：
+      数据存进你自己的**私有仓库**里的一个 JSON 文件，免费、永久、自带历史版本，换设备填同样配置就能恢复。
+    </div>
+    <label>仓库（账号/仓库名）</label><input id="ghRepo" placeholder="zane-liu6688/savings-data" value="zane-liu6688/savings-data">
+    <div class="row">
+      <div><label>分支</label><input id="ghBranch" placeholder="main" value="main"></div>
+      <div><label>文件路径</label><input id="ghPath" placeholder="cunqian.json" value="cunqian.json"></div>
+    </div>
+    <label>访问令牌（Fine-grained token，只勾该仓库的 Contents 读写）</label>
+    <input id="ghToken" type="password" placeholder="github_pat_...">
+    <div class="btns">
+      <button class="green" id="ghUpload">上传到云端</button>
+      <button class="gray" id="ghDownload">从云端恢复</button>
+    </div>
+    <div class="note" id="ghStatus"></div>
+  </div>
+
   <div class="card" style="border-left-color:#f43f5e">
     <h2>重置</h2>
     <div class="note">清空所有数据，恢复到默认示例。</div>
@@ -587,6 +607,83 @@ document.querySelectorAll('nav a').forEach((a) => {
     window.scrollTo(0, 0);
   };
 });
+
+/* ============ GitHub 云同步（浏览器可跨域，永久免费） ============ */
+const GHKEY = CFG.storeKey + '_gh';
+let GH = { repo: 'zane-liu6688/savings-data', branch: 'main', path: 'cunqian.json', token: '' };
+try { Object.assign(GH, JSON.parse(localStorage.getItem(GHKEY) || '{}')); } catch (e) {}
+
+function ghSaveCfg() {
+  GH = {
+    repo: $('ghRepo').value.trim(),
+    branch: $('ghBranch').value.trim() || 'main',
+    path: $('ghPath').value.trim() || 'data.json',
+    token: $('ghToken').value.trim(),
+  };
+  localStorage.setItem(GHKEY, JSON.stringify(GH));
+}
+function ghFill() {
+  $('ghRepo').value = GH.repo || '';
+  $('ghBranch').value = GH.branch || 'main';
+  $('ghPath').value = GH.path || 'data.json';
+  $('ghToken').value = GH.token || '';
+}
+const ghMsg = (m) => { $('ghStatus').textContent = m; };
+
+function b64encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  return btoa(bin);
+}
+function b64decode(b64) {
+  const bin = atob(String(b64).replace(/\s/g, ''));
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+function ghUrl() { return `https://api.github.com/repos/${GH.repo}/contents/${encodeURI(GH.path)}`; }
+function ghHeaders() {
+  return { Authorization: `Bearer ${GH.token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+}
+
+async function ghUpload() {
+  ghSaveCfg();
+  if (!GH.repo || !GH.token) return ghMsg('请先填仓库和令牌');
+  ghMsg('正在上传…');
+  try {
+    let sha = null;
+    const r1 = await fetch(`${ghUrl()}?ref=${encodeURIComponent(GH.branch)}`, { headers: ghHeaders() });
+    if (r1.ok) sha = (await r1.json()).sha;
+    else if (r1.status !== 404) return ghMsg(`读取失败（HTTP ${r1.status}）：${r1.status === 401 ? '令牌不对或已过期' : '检查仓库名/权限'}`);
+    const body = { message: `backup ${new Date().toLocaleString('zh-CN')}`, content: b64encode(JSON.stringify(S, null, 2)), branch: GH.branch };
+    if (sha) body.sha = sha;
+    const r2 = await fetch(ghUrl(), { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) });
+    if (r2.ok) ghMsg(`✅ 已上传（${new Date().toLocaleTimeString('zh-CN')}）`);
+    else { const t = await r2.text(); ghMsg(`上传失败（HTTP ${r2.status}）：${t.slice(0, 120)}`); }
+  } catch (e) { ghMsg('上传失败：' + e); }
+}
+
+async function ghDownload() {
+  ghSaveCfg();
+  if (!GH.repo || !GH.token) return ghMsg('请先填仓库和令牌');
+  ghMsg('正在读取…');
+  try {
+    const r = await fetch(`${ghUrl()}?ref=${encodeURIComponent(GH.branch)}`, { headers: ghHeaders() });
+    if (r.status === 404) return ghMsg('云端还没有备份文件，先点「上传到云端」');
+    if (!r.ok) return ghMsg(`读取失败（HTTP ${r.status}）`);
+    const j = await r.json();
+    const data = JSON.parse(b64decode(j.content));
+    if (!Array.isArray(data.jobs)) return ghMsg('云端文件格式不对');
+    if (!confirm('恢复会用云端数据覆盖本机，确定吗？')) return ghMsg('已取消');
+    S = Object.assign(defaultState(), data);
+    save(); render(); ghMsg('✅ 已从云端恢复');
+  } catch (e) { ghMsg('读取失败：' + e); }
+}
+
+$('ghUpload').onclick = ghUpload;
+$('ghDownload').onclick = ghDownload;
+['ghRepo', 'ghBranch', 'ghPath', 'ghToken'].forEach((id) => $(id).addEventListener('change', ghSaveCfg));
+ghFill();
 
 render();
 </script>
