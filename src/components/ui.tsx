@@ -170,6 +170,30 @@ export const Stat: React.FC<{
   </Text>
 );
 
+/** 横向比例条：直观对比「日收入 / 日支出 / 攒钱目标」这类相对大小 */
+export const RatioBar: React.FC<{
+  label: string;
+  value: number;
+  max: number;
+  color?: string;
+  valueText?: string;
+  note?: string;
+}> = ({ label, value, max, color = colors.primary, valueText, note }) => {
+  const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  return (
+    <View style={styles.ratioWrap}>
+      <View style={styles.ratioHead}>
+        <Text style={styles.ratioLabel}>{label}</Text>
+        <Text style={[styles.ratioValue, { color }]}>{valueText ?? `${pct.toFixed(0)}%`}</Text>
+      </View>
+      <View style={styles.ratioTrack}>
+        <View style={[styles.ratioFill, { width: `${pct}%`, backgroundColor: color }]} />
+      </View>
+      {note ? <Text style={styles.ratioNote}>{note}</Text> : null}
+    </View>
+  );
+};
+
 export const MainButton: React.FC<{
   title: string;
   onPress: () => void;
@@ -335,4 +359,17 @@ const styles = StyleSheet.create({
 
   statLine: { fontSize: 15, marginVertical: 5, color: colors.text, lineHeight: 22 },
   statValue: { fontSize: 15 },
+
+  ratioWrap: { marginVertical: 8 },
+  ratioHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  ratioLabel: { fontSize: 13, fontWeight: '700', color: colors.sub },
+  ratioValue: { fontSize: 14, fontWeight: '800' },
+  ratioTrack: {
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: colors.divider,
+    overflow: 'hidden',
+  },
+  ratioFill: { height: 10, borderRadius: 6 },
+  ratioNote: { fontSize: 12, color: colors.sub, marginTop: 5 },
 });
