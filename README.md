@@ -2,7 +2,20 @@
 
 一个为国内用户做的**个人攒钱进度 App**（React Native + Expo）。填进工资和开销，它告诉你：**今天还能自由花多少钱**、**每个月能攒多少**、**到哪一年能攒够目标**。
 
-> 数据存在手机本地（AsyncStorage），不联网也能用；需要多台手机共享时，可选登录内置云同步。
+> 数据存在手机本地（AsyncStorage），不联网也能用；需要多台手机共享时，可选登录云同步。
+
+## 🌐 网页版（免装 App，推荐）
+
+**https://zane-liu6688.github.io/savings-plan/**
+
+手机浏览器直接打开就能用（iPhone / 安卓 / 电脑都行），可「添加到主屏幕」当 App 用。功能与安卓版一致，数据存本机浏览器，并支持导出/导入备份。
+
+网页版云同步用 **GitHub 私有仓库**（浏览器跨域限制导致无法直连坚果云）：
+1. 自己建一个**私有**仓库（例如 `your-name/savings-data`）
+2. 生成 fine-grained token：权限只勾该仓库的 **Contents: Read and write**
+3. 网页「设置 → 云同步」填仓库名 + 令牌 → 上传 / 恢复
+
+> 本仓库**不包含任何真实账号、密钥或网盘密码**，所有云服务都需要使用者自己填。
 
 ## 功能
 
@@ -67,9 +80,9 @@ npx eas build -p android --profile preview
 
 同步文件是网盘根目录的 `cunqian-backup.json`，坚果云自带历史版本，误覆盖也能找回。
 
-### 方案二：Supabase（备用，海外节点）
+### 方案二：Supabase（备用，需自备项目）
 
-内置了服务地址与 publishable key，注册 / 登录即可同步。若要在自己的项目里用，先到 SQL Editor 执行 [`src/sync/schema.sql`](src/sync/schema.sql)（建 `app_state_cn` 表 + 行级权限），再把 URL / Key 换成自己的。
+本仓库不内置任何 Supabase 项目。想用的话：自己免费注册一个项目 → 在 SQL Editor 执行 [`src/sync/schema.sql`](src/sync/schema.sql)（建 `app_state_cn` 表 + 行级权限）→ 在 App 设置页填入你自己项目的 URL / publishable key。
 
 ## 数据说明
 
