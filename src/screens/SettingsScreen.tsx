@@ -70,6 +70,8 @@ export default function SettingsScreen() {
       bigItems: s.bigItems,
       years: s.years,
       socialMonthly: s.socialMonthly,
+      housingFundMonthly: s.housingFundMonthly,
+      savedAmount: s.savedAmount,
       specialDeductions: s.specialDeductions,
     };
   };
@@ -96,6 +98,8 @@ export default function SettingsScreen() {
         bigItems: parsed.bigItems || [],
         years: parsed.years || [],
         socialMonthly: Number(parsed.socialMonthly) || 0,
+        housingFundMonthly: Number(parsed.housingFundMonthly) || 0,
+        savedAmount: Number(parsed.savedAmount) || 0,
         specialDeductions: parsed.specialDeductions || [],
       });
       setImportText('');
