@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "攒钱计划",
+    "slug": "cunqian",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "icon": "./assets/icon.png",
+    "scheme": "cunqian",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.zane.cunqian",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.zane.cunqian",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#f8e9e9"
+      }
+    },
+    "owner": "zaneliu"
+  }
+}

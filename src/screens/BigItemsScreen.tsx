@@ -1,0 +1,76 @@
+import React, { useState } from 'react';
+import { View, Text, Alert, StyleSheet, useWindowDimensions } from 'react-native';
+import { Screen, Card, LabeledInput, AddButton, CardItem, ResultBox, Stat } from '../components/ui';
+import { useStore, useComputed } from '../store';
+import { colors, currency } from '../theme';
+
+export default function BigItemsScreen() {
+  const bigItems = useStore((s) => s.bigItems);
+  const addBigItem = useStore((s) => s.addBigItem);
+  const delBigItem = useStore((s) => s.delBigItem);
+  const r = useComputed();
+
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [days, setDays] = useState('');
+  const { width } = useWindowDimensions();
+  const isSmall = width < 380;
+
+  const onAdd = () => {
+    const p = parseFloat(price);
+    const d = parseInt(days, 10);
+    if (isNaN(p) || p <= 0 || isNaN(d) || d <= 0) {
+      Alert.alert('提示', '请完整填写价格和分摊天数！');
+      return;
+    }
+    addBigItem({ name: name.trim() || '大件商品', price: p, days: d });
+    setName(''); setPrice(''); setDays('');
+  };
+
+  return (
+    <Screen>
+      <Card title="🛒 一次性大额消费（分摊到每天）" accent="purple">
+        <LabeledInput
+          label="想买的东西"
+          placeholder="例：换新手机 / 买电脑 / 旅游"
+          value={name}
+          onChange={setName}
+          flex={2}
+        />
+        <View style={[styles.row, isSmall && styles.rowCol]}>
+          <LabeledInput label="总价 (元)" placeholder="价格" value={price} onChange={setPrice} keyboardType="numeric" />
+          <LabeledInput label="分多少天摊完" placeholder="天数" value={days} onChange={setDays} keyboardType="numeric" />
+        </View>
+        <AddButton title="计入大额分期" onPress={onAdd} color={colors.purple} />
+      </Card>
+
+      <Card title="正在分摊的大额消费清单" accent="purple">
+        {bigItems.length === 0 ? (
+          <Text style={styles.empty}>还没有大额分期项目</Text>
+        ) : (
+          bigItems.map((b) => {
+            const dayCost = b.price / (b.days > 0 ? b.days : 1);
+            return (
+              <CardItem
+                key={b.id}
+                title={b.name}
+                lines={[`总价 ${currency(b.price)} / ${b.days}天`, `每天摊 ${currency(dayCost)}`]}
+                onDelete={() => delBigItem(b.id)}
+              />
+            );
+          })
+        )}
+        <ResultBox accent="purple">
+          <Stat label="所有大件叠加后每天的分期成本:" value={currency(r.totalBigDayCost)} color={colors.red} bold />
+          <Stat label="折合每月:" value={currency(r.totalBigDayCost * 30.4167)} color={colors.red} />
+        </ResultBox>
+      </Card>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  rowCol: { flexDirection: 'column' },
+  empty: { color: colors.sub, paddingVertical: 10 },
+});
