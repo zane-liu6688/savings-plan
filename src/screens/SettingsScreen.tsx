@@ -351,7 +351,7 @@ export default function SettingsScreen() {
           onChange={setCfgUrl}
           flex={2}
         />
-        <LabeledInput label="public key" placeholder="sb_publishable_..." value={cfgKey} onChange={setCfgKey} flex={2} />
+        <LabeledInput label="public key" placeholder="粘贴你自己项目的 publishable key" value={cfgKey} onChange={setCfgKey} flex={2} />
         <View style={[styles.btnRow, isSmall && styles.btnRowCol]}>
           <AddButton title="保存配置" onPress={onSaveCfg} />
           <DangerButton title="清空配置" onPress={onResetCfg} />
