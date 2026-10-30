@@ -51,8 +51,10 @@ export interface AppData {
   expenses: Expense[];
   bigItems: BigItem[];
   years: YearItem[];
-  socialMonthly: number;                 // 五险一金个人月缴（元）；填 0 表示按工资自动估算
+  socialMonthly: number;                 // 五险一金个人月缴合计（元）；填 0 表示按工资自动估算
+  housingFundMonthly: number;            // 其中「公积金」个人月缴部分（仍是自己的钱，不算支出）
   specialDeductions: SpecialDeduction[]; // 专项附加扣除明细
+  savedAmount: number;                   // 目前实际已经攒下来的钱（元，手动更新）
 }
 
 // 计算引擎输出的全部派生指标
@@ -91,6 +93,14 @@ export interface CalcResult {
   netRefYear: number;       // 参考税后年收入（不参与计算）
   netRefMonth: number;      // 参考税后月收入（不参与计算）
   marginalRate: number;     // 参考边际税率
+  housingFundYear: number;  // 公积金个人缴纳（全年）—— 仍是自己的钱
+
+  // 攒钱进度
+  savedAmount: number;      // 已攒金额
+  savingsProgress: number;  // 完成度 0~1
+  remainingToGoal: number;  // 还差多少
+  daysToGoal: number;       // 按当前速度还要多少天（<=0 表示无法达成，返回 -1）
+  emergencyMonths: number;  // 已攒金额够支撑几个月的生活开销
 
   totalWorkDayCost: number; // 工作工具每日摊销现金流出
   totalExpMonth: number;    // 每月固定生活总流出
