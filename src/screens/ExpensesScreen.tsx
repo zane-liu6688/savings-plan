@@ -71,7 +71,10 @@ export default function ExpensesScreen() {
             <CardItem
               key={e.id}
               title={e.name}
-              lines={[`每月 ${currency(e.amount)} → 全年 ${currency(e.amount * 12)}`]}
+              lines={[
+                `每月 ${currency(e.amount)} → 全年 ${currency(e.amount * 12)}`,
+                `占每月开销 ${pct(e.amount, r.totalExpMonth)}%`,
+              ]}
               onDelete={() => delExpense(e.id)}
             />
           ))
