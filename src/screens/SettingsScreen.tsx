@@ -5,6 +5,7 @@ import { useStore, useComputed } from '../store';
 import { colors, currency } from '../theme';
 import type { AppData } from '../types';
 import * as sync from '../sync/supabaseSync';
+import * as webdav from '../sync/webdavSync';
 
 export default function SettingsScreen() {
   const r = useComputed();
@@ -29,8 +30,21 @@ export default function SettingsScreen() {
   const [syncStatus, setSyncStatus] = useState('未配置');
   const [loggedEmail, setLoggedEmail] = useState<string | null>(null);
 
+  // 坚果云 WebDAV 同步
+  const [davUrl, setDavUrl] = useState(webdav.DEFAULT_WEBDAV_URL);
+  const [davUser, setDavUser] = useState('');
+  const [davPass, setDavPass] = useState('');
+  const [davStatus, setDavStatus] = useState('未配置');
+
   useEffect(() => {
     (async () => {
+      const dav = await webdav.loadConfig();
+      if (dav) {
+        setDavUrl(dav.url);
+        setDavUser(dav.username);
+        setDavPass(dav.password);
+        setDavStatus('已配置，可以上传 / 恢复了');
+      }
       const cfg = await sync.loadConfig();
       setCfgUrl(cfg.url);
       setCfgKey(cfg.anonKey);
@@ -107,6 +121,66 @@ export default function SettingsScreen() {
     } catch (e) {
       Alert.alert('导入失败', '请检查 JSON 格式是否正确');
     }
+  };
+
+  const onSaveDav = async () => {
+    if (!davUrl.trim() || !davUser.trim() || !davPass.trim()) {
+      Alert.alert('提示', '请填写 WebDAV 地址、账号和应用密码');
+      return;
+    }
+    await webdav.saveConfig({ url: davUrl, username: davUser, password: davPass });
+    setDavStatus('已保存，建议先点「测试连接」');
+    Alert.alert('已保存', '坚果云配置已保存');
+  };
+
+  const onTestDav = async () => {
+    setDavStatus('正在测试…');
+    const err = await webdav.testConnection({ url: davUrl, username: davUser, password: davPass });
+    setDavStatus(err ? `连接失败：${err}` : '✅ 连接成功，可以用了');
+    if (err) Alert.alert('连接失败', err);
+  };
+
+  const onUploadDav = async () => {
+    setDavStatus('正在上传…');
+    const err = await webdav.uploadState(gather());
+    setDavStatus(err ? `上传失败：${err}` : `已上传 ${new Date().toLocaleString()}`);
+    if (err) Alert.alert('上传失败', err);
+    else Alert.alert('上传成功', '账本已存到坚果云，换手机时用「从坚果云恢复」即可');
+  };
+
+  const onDownloadDav = async () => {
+    setDavStatus('正在读取云端…');
+    const res = await webdav.downloadState();
+    if (res.error) {
+      setDavStatus(`恢复失败：${res.error}`);
+      Alert.alert('恢复失败', res.error);
+      return;
+    }
+    if (!res.data) {
+      setDavStatus('坚果云里还没有备份');
+      Alert.alert('坚果云里还没有备份', '先在当前手机点「上传到坚果云」');
+      return;
+    }
+    const when = res.updatedAt ? new Date(res.updatedAt).toLocaleString() : '未知';
+    setDavStatus(`云端备份时间：${when}`);
+    Alert.alert('确认恢复', `云端备份时间：${when}\n\n恢复后本机数据会被覆盖，确定吗？`, [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '确定恢复',
+        style: 'destructive',
+        onPress: () => {
+          if (res.data) replaceAll(res.data);
+          Alert.alert('已恢复', '云端数据已导入本机');
+        },
+      },
+    ]);
+  };
+
+  const onClearDav = async () => {
+    await webdav.clearConfig();
+    setDavUser('');
+    setDavPass('');
+    setDavStatus('未配置');
   };
 
   const onSaveCfg = async () => {
@@ -232,7 +306,39 @@ export default function SettingsScreen() {
         />
       </Card>
 
-      <Card title="云同步（已内置，无需填写）" accent="primary">
+      <Card title="☁️ 坚果云同步（国内免费·推荐）" accent="cyan">
+        <Text style={styles.note}>
+          国内网盘，免费额度长期够用（每月 1GB 上传，账本只有几十 KB），不用备案、不用服务器。
+          {'\n'}玩法：电脑打开坚果云网页版 → 账户信息 → 安全选项 → 添加应用 → 得到一个「应用密码」→ 填到下面。
+        </Text>
+        <LabeledInput
+          label="WebDAV 地址"
+          placeholder={webdav.DEFAULT_WEBDAV_URL}
+          value={davUrl}
+          onChange={setDavUrl}
+          flex={2}
+        />
+        <LabeledInput
+          label="坚果云账号（邮箱）"
+          placeholder="you@example.com"
+          value={davUser}
+          onChange={setDavUser}
+          flex={2}
+        />
+        <LabeledInput label="应用密码" placeholder="不是登录密码" value={davPass} onChange={setDavPass} flex={1} />
+        <View style={[styles.btnRow, isSmall && styles.btnRowCol]}>
+          <AddButton title="保存配置" onPress={onSaveDav} />
+          <AddButton title="测试连接" onPress={onTestDav} color={colors.amber} />
+        </View>
+        <Text style={styles.status}>{davStatus}</Text>
+        <View style={[styles.btnRow, isSmall && styles.btnRowCol]}>
+          <AddButton title="上传到坚果云" onPress={onUploadDav} color={colors.green} />
+          <AddButton title="从坚果云恢复" onPress={onDownloadDav} />
+          <DangerButton title="清除配置" onPress={onClearDav} />
+        </View>
+      </Card>
+
+      <Card title="云同步（Supabase，备用方案）" accent="primary">
         <Text style={styles.note}>
           云同步服务已内置，直接用邮箱注册 / 登录即可，两台手机登同一账号就能共享数据。下面的地址和 Key 已自动填好，不用动它。
         </Text>
