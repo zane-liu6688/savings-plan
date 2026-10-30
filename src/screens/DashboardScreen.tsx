@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Alert, StyleSheet, useWindowDimensions } from 'react-native';
-import { Screen, Card, ResultBox, Tile, Stat } from '../components/ui';
+import { Screen, Card, ResultBox, Tile, Stat, RatioBar } from '../components/ui';
 import { useStore, useComputed } from '../store';
 import { colors, currency } from '../theme';
 
 const DAYS_IN_MONTH = 30.4167;
+
+const pct = (v: number, base: number): string => (base > 0 ? Math.max(0, (v / base) * 100).toFixed(0) : '0');
 
 export default function DashboardScreen() {
   const r = useComputed();
@@ -58,6 +60,43 @@ export default function DashboardScreen() {
           <Text style={styles.resetBtnText}>清空并重置所有数据</Text>
         </Pressable>
       </View>
+
+      {/* 每天收支对比：一眼看出会不会花超 */}
+      <Card title="每天收支对比" accent="cyan">
+        <RatioBar
+          label="每天收入（基准）"
+          value={r.grossDay}
+          max={r.grossDay || 1}
+          color={colors.primary}
+          valueText={currency(r.grossDay)}
+        />
+        <RatioBar
+          label="每天花销合计"
+          value={r.auditExpDay}
+          max={r.grossDay || 1}
+          color={colors.red}
+          valueText={`${currency(r.auditExpDay)} · 占收入 ${pct(r.auditExpDay, r.grossDay)}%`}
+        />
+        <RatioBar
+          label="每天要存的目标"
+          value={r.goalDay}
+          max={r.grossDay || 1}
+          color={colors.amber}
+          valueText={`${currency(r.goalDay)} · 占收入 ${pct(r.goalDay, r.grossDay)}%`}
+        />
+        <RatioBar
+          label="每天能剩下"
+          value={Math.max(0, r.surplusDay - r.goalDay)}
+          max={r.grossDay || 1}
+          color={colors.green}
+          valueText={`${currency(r.surplusDay - r.goalDay)} (${pct(r.surplusDay - r.goalDay, r.grossDay)}%)`}
+          note={
+            r.auditExpDay + r.goalDay > r.grossDay
+              ? '⚠️ 花销 + 攒钱目标已经超过每天收入，这天会倒亏，需要压缩开销或加收入。'
+              : '✅ 花销和攒钱目标都在每天收入之内，不会花超。'
+          }
+        />
+      </Card>
 
       {/* 钱袋子全周期储备投影 */}
       <Card title="攒钱进度投影" accent="green">
