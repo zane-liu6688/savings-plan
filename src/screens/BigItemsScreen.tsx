@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet, useWindowDimensions } from 'react-native';
-import { Screen, Card, LabeledInput, AddButton, CardItem, ResultBox, Stat } from '../components/ui';
+import { Screen, Card, LabeledInput, AddButton, CardItem, ResultBox, Stat, RatioBar } from '../components/ui';
 import { useStore, useComputed } from '../store';
 import { colors, currency } from '../theme';
+
+const pct = (v: number, base: number): string => (base > 0 ? Math.max(0, (v / base) * 100).toFixed(0) : '0');
 
 export default function BigItemsScreen() {
   const bigItems = useStore((s) => s.bigItems);
@@ -54,7 +56,10 @@ export default function BigItemsScreen() {
               <CardItem
                 key={b.id}
                 title={b.name}
-                lines={[`总价 ${currency(b.price)} / ${b.days}天`, `每天摊 ${currency(dayCost)}`]}
+                lines={[
+                  `总价 ${currency(b.price)} / ${b.days}天`,
+                  `每天摊 ${currency(dayCost)} · 相当于每天收入的 ${pct(dayCost, r.grossDay)}%`,
+                ]}
                 onDelete={() => delBigItem(b.id)}
               />
             );
@@ -63,6 +68,22 @@ export default function BigItemsScreen() {
         <ResultBox accent="purple">
           <Stat label="所有大件叠加后每天的分期成本:" value={currency(r.totalBigDayCost)} color={colors.red} bold />
           <Stat label="折合每月:" value={currency(r.totalBigDayCost * 30.4167)} color={colors.red} />
+          <Stat label="对比你每天能赚:" value={`${currency(r.grossDay)}/天`} color={colors.primary} bold />
+
+          <RatioBar
+            label="大件分期 占 日收入"
+            value={r.totalBigDayCost}
+            max={r.grossDay || 1}
+            color={colors.purple}
+            valueText={`${pct(r.totalBigDayCost, r.grossDay)}%`}
+            note={
+              r.grossDay <= 0
+                ? '先去「收入」页填月薪，这里才能算占比。'
+                : Number(pct(r.totalBigDayCost, r.grossDay)) > 30
+                ? '⚠️ 大件分期已经吃掉日收入的三成以上，再加上生活费和攒钱目标容易倒亏，建议把分摊天数拉长。'
+                : '✅ 大件分期压力可控。想更轻松就把「分多少天」填大一点。'
+            }
+          />
         </ResultBox>
       </Card>
     </Screen>
