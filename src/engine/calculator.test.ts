@@ -14,6 +14,8 @@ const defaultData: AppData = {
   bigItems: [{ id: 'b1', name: '换新手机', price: 3000, days: 120 }],
   years: [{ id: 'y1', label: '2026' }, { id: 'y2', label: '2027' }, { id: 'y3', label: '2028' }],
   socialMonthly: 0, // 自动按 10.5% 估算
+  housingFundMonthly: 0,
+  savedAmount: 0,
   specialDeductions: [{ id: 'd1', name: '住房租金', monthly: 1500 }],
 };
 
@@ -79,6 +81,14 @@ approx('个税 收入为负不交税', calcChinaTax(-100), 0);
 // 手填五险一金优先于自动估算
 const manualSocial = compute({ ...defaultData, socialMonthly: 1000 });
 approx('手填五险一金 socialYear', manualSocial.socialYear, 12000);
+approx('公积金全年 housingFundYear', compute({ ...defaultData, socialMonthly: 1000, housingFundMonthly: 500 }).housingFundYear, 6000);
+
+// 攒钱进度
+const progress = compute({ ...defaultData, savedAmount: 25000 });
+approx('完成度 savingsProgress', progress.savingsProgress, 0.25);
+approx('还差 remainingToGoal', progress.remainingToGoal, 75000);
+approx('还要多少天 daysToGoal', progress.daysToGoal, 75000 / progress.surplusDay);
+approx('够撑几个月 emergencyMonths', progress.emergencyMonths, 25000 / 3500);
 
 console.log(`\n结果：${passed} 通过, ${failed} 失败`);
 if (failed > 0) process.exit(1);
