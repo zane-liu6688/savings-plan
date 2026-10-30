@@ -13,6 +13,8 @@ export const DAYS_IN_MONTH = 30.4167;
 export function compute(data: AppData): CalcResult {
   const { totalGoal, jobs, assets, expenses, bigItems, years } = data;
   const socialMonthly = data.socialMonthly ?? 0;
+  const housingFundMonthly = data.housingFundMonthly ?? 0;
+  const savedAmount = data.savedAmount ?? 0;
   const specialDeductions = data.specialDeductions ?? [];
 
   // 1. 收入汇总（月薪×月数 或 日薪×天数，均为税前总额）
@@ -32,6 +34,7 @@ export function compute(data: AppData): CalcResult {
   const netRefYear = Math.max(0, grossYear - deductionYear - taxRefYear);
   const netRefMonth = netRefYear / 12;
   const marginalRate = getMarginalRate(taxableYear);
+  const housingFundYear = Math.min(housingFundMonthly, socialMonthly > 0 ? socialMonthly : (grossYear / 12) * 0.105) * 12;
 
   // 收入按税前全额计入现金流：实际交了多少税，由用户自己记到「生活」开销里
   const grossMonth = grossYear / 12;
@@ -71,6 +74,12 @@ export function compute(data: AppData): CalcResult {
 
   const surplusDay = auditNetDay - auditExpDay;
   const surplusMonth = surplusDay * DAYS_IN_MONTH;
+
+  // 攒钱进度（已存多少 / 还差多少 / 按当前速度要多久 / 够撑几个月）
+  const savingsProgress = totalGoal > 0 ? Math.min(1, Math.max(0, savedAmount / totalGoal)) : 0;
+  const remainingToGoal = Math.max(0, totalGoal - savedAmount);
+  const daysToGoal = remainingToGoal <= 0 ? 0 : surplusDay > 0 ? remainingToGoal / surplusDay : -1;
+  const emergencyMonths = totalExpMonth > 0 ? savedAmount / totalExpMonth : 0;
 
   // 9. 钱袋子短周期蓄水池
   const tlDay = surplusDay;
@@ -123,6 +132,12 @@ export function compute(data: AppData): CalcResult {
     netRefYear,
     netRefMonth,
     marginalRate,
+    housingFundYear,
+    savedAmount,
+    savingsProgress,
+    remainingToGoal,
+    daysToGoal,
+    emergencyMonths,
     totalWorkDayCost,
     totalExpMonth,
     totalExpDay,
