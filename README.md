@@ -60,8 +60,10 @@ npx eas build -p android --profile preview
 
 1. 注册 [坚果云](https://www.jianguoyun.com/)
 2. 网页版 → 账户信息 → 安全选项 → **添加应用**，得到一个「应用密码」（不是登录密码）
-3. App 设置页 → 坚果云同步 → 填 WebDAV 地址（默认 `https://dav.jianguoyun.com/dav/`）、邮箱、应用密码
+3. App 设置页 → 坚果云同步 → 填 WebDAV 地址（默认 `https://dav.jianguoyun.com/dav/我的坚果云/`）、邮箱、应用密码
 4. 点「测试连接」→「上传到坚果云」；换手机后点「从坚果云恢复」
+
+> 坚果云 `/dav/` 根目录不允许直接写文件，所以地址必须带「我的坚果云」目录；代码里对直接填 `/dav/` 的情况会自动补全一次。
 
 同步文件是网盘根目录的 `cunqian-backup.json`，坚果云自带历史版本，误覆盖也能找回。
 
