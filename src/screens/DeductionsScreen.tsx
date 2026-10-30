@@ -19,11 +19,14 @@ export default function DeductionsScreen() {
   const r = useComputed();
   const socialMonthly = useStore((s) => s.socialMonthly);
   const setSocialMonthly = useStore((s) => s.setSocialMonthly);
+  const housingFundMonthly = useStore((s) => s.housingFundMonthly);
+  const setHousingFundMonthly = useStore((s) => s.setHousingFundMonthly);
   const deductions = useStore((s) => s.specialDeductions);
   const addDeduction = useStore((s) => s.addDeduction);
   const delDeduction = useStore((s) => s.delDeduction);
 
   const [socialText, setSocialText] = useState(socialMonthly > 0 ? String(socialMonthly) : '');
+  const [fundText, setFundText] = useState(housingFundMonthly > 0 ? String(housingFundMonthly) : '');
   const [name, setName] = useState('');
   const [monthly, setMonthly] = useState('');
   const { width } = useWindowDimensions();
@@ -33,6 +36,12 @@ export default function DeductionsScreen() {
     setSocialText(t);
     const v = parseFloat(t);
     setSocialMonthly(!isNaN(v) && v > 0 ? v : 0);
+  };
+
+  const onFundChange = (t: string) => {
+    setFundText(t);
+    const v = parseFloat(t);
+    setHousingFundMonthly(!isNaN(v) && v > 0 ? v : 0);
   };
 
   const showSocialTip = () => {
@@ -87,6 +96,20 @@ export default function DeductionsScreen() {
           {socialMonthly > 0
             ? `当前：手填 ${currency(socialMonthly)}/月`
             : `当前：自动估算 ${currency(autoSocial)}/月（按 10.5%）`}
+        </Text>
+
+        <View style={styles.sep} />
+        <LabeledInput
+          label="其中：公积金个人缴纳 (元/月)"
+          placeholder="这部分仍是你的钱（买房 / 租房可提取）"
+          value={fundText}
+          onChange={onFundChange}
+          keyboardType="numeric"
+        />
+        <Text style={styles.hint}>
+          {housingFundMonthly > 0
+            ? `公积金 ${currency(housingFundMonthly)}/月（全年 ${currency(housingFundMonthly * 12)}）在你名下，不算真花掉`
+            : '公积金那笔钱其实还在你名下，填一下可以从"真花掉的钱"里减掉'}
         </Text>
       </Card>
 
