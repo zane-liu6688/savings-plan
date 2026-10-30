@@ -9,7 +9,39 @@ export default function JobsScreen() {
   const jobs = useStore((s) => s.jobs);
   const addJob = useStore((s) => s.addJob);
   const delJob = useStore((s) => s.delJob);
+  const expenses = useStore((s) => s.expenses);
+  const addExpense = useStore((s) => s.addExpense);
   const r = useComputed();
+
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  // 把「参考税费」一键写成开销（金额之后可自己改成真实值）
+  const onRecordTax = () => {
+    const taxMonthly = r.taxRefYear / 12;
+    const socialGross = r.socialYear / 12;
+    const fundMonthly = r.housingFundYear / 12;
+    const socialReal = Math.max(0, socialGross - fundMonthly);
+    const exists = (n: string) => expenses.some((e) => e.name === n);
+    const added: string[] = [];
+
+    if (socialReal > 0 && !exists('五险一金（养老/医疗统筹/失业）')) {
+      addExpense({ name: '五险一金（养老/医疗统筹/失业）', amount: round2(socialReal) });
+      added.push('五险一金');
+    }
+    if (taxMonthly > 0 && !exists('个人所得税')) {
+      addExpense({ name: '个人所得税', amount: round2(taxMonthly) });
+      added.push('个人所得税');
+    }
+
+    Alert.alert(
+      added.length ? '已记进「生活」开销' : '已经记过了',
+      added.length
+        ? `已添加：${added.join('、')}。\n\n金额是按参考值估的，等你实际交了税，去「生活」页改成真实数字就行。${
+            fundMonthly > 0 ? `\n\n公积金 ${currency(fundMonthly)}/月 没有算进花销——那是你自己的钱。` : ''
+          }`
+        : '「生活」里已经有同名开销了，直接去改金额即可。'
+    );
+  };
 
   const [name, setName] = useState('');
   const [type, setType] = useState<SalaryType>('month');
@@ -56,6 +88,9 @@ export default function JobsScreen() {
             keyboardType="numeric"
           />
         </View>
+        <Text style={styles.tipNote}>
+          收入会变（加班、换工作）？分几段分别录就行：比如「1-5月 8000，6-12月 10000」，App 会自动加起来算平均每天能赚多少。
+        </Text>
         <AddButton title="➕ 添加这笔收入" onPress={onAdd} />
       </Card>
 
@@ -83,15 +118,20 @@ export default function JobsScreen() {
         </ResultBox>
 
         <ResultBox accent="amber">
-          <Text style={styles.tipTitle}>💡 税费参考（含五险一金，仅供参考、不参与计算）</Text>
-          <Stat label="五险一金(估值):" value={currency(r.socialYear)} color={colors.amberDark} />
+          <Text style={styles.tipTitle}>💡 下面只是「预估税费」，随便看看就行</Text>
+          <Stat label="五险一金(预估):" value={currency(r.socialYear)} color={colors.amberDark} />
+          <Stat label="其中公积金(仍是你的钱):" value={currency(r.housingFundYear)} color={colors.primary} />
           <Stat label="专项附加扣除:" value={currency(r.specialYear)} color={colors.amberDark} />
-          <Stat label="可能要交的个税(全年):" value={currency(r.taxRefYear)} color={colors.red} bold />
-          <Stat label="参考税后(每月):" value={currency(r.netRefMonth)} color={colors.green} />
-          <Stat label="参考税率档:" value={`${(r.marginalRate * 100).toFixed(0)}%`} color={colors.sub} />
+          <Stat label="个税(预估，全年):" value={currency(r.taxRefYear)} color={colors.red} bold />
+          <Stat label="预估税后(每月):" value={currency(r.netRefMonth)} color={colors.green} />
+          <Stat label="预估税率档:" value={`${(r.marginalRate * 100).toFixed(0)}%`} color={colors.sub} />
           <Text style={styles.tipNote}>
-            税务规则经常变，这里只是按公开税率粗算给你个心理准备。实际交了多少税，请到「生活」页自己加一项开销（例：交个税），这样算出来才是真账。
+            这些数字是按你上面填的收入、用公开税率粗算的，加班多、收入变了它就会跟着变。估得不准也没关系——它一分钱都不会影响你的攒钱计算。
+            {'\n'}真实情况是：实际被扣了多少，就去「生活」页照实填一项开销（名字自己写清楚，比如「个人所得税」「五险一金」「医保」），这样账才是真的。
           </Text>
+          <View style={{ marginTop: 12 }}>
+            <AddButton title="懒得手填？把预估金额先填进开销（之后可改）" onPress={onRecordTax} color={colors.amber} />
+          </View>
         </ResultBox>
       </Card>
     </Screen>
