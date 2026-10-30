@@ -22,6 +22,8 @@ const defaultData: AppData = {
     { id: genId(), label: '2028' },
   ],
   socialMonthly: 0,
+  housingFundMonthly: 0,
+  savedAmount: 0,
   specialDeductions: [{ id: genId(), name: '住房租金', monthly: 1500 }],
 };
 
@@ -43,6 +45,8 @@ interface StoreState extends AppData {
   addYear: (label: string) => void;
   delYear: (id: string) => void;
   setSocialMonthly: (v: number) => void;
+  setHousingFundMonthly: (v: number) => void;
+  setSavedAmount: (v: number) => void;
   addDeduction: (d: Omit<SpecialDeduction, 'id'>) => void;
   delDeduction: (id: string) => void;
   replaceAll: (data: AppData) => void; // 导入备份
@@ -72,6 +76,8 @@ export const useStore = create<StoreState>()(
       delYear: (id) => set((s) => ({ years: s.years.filter((x) => x.id !== id) })),
 
       setSocialMonthly: (v) => set({ socialMonthly: v }),
+      setHousingFundMonthly: (v) => set({ housingFundMonthly: v }),
+      setSavedAmount: (v) => set({ savedAmount: v }),
 
       addDeduction: (d) => set((s) => ({ specialDeductions: [...s.specialDeductions, { ...d, id: genId() }] })),
       delDeduction: (id) => set((s) => ({ specialDeductions: s.specialDeductions.filter((x) => x.id !== id) })),
@@ -91,6 +97,8 @@ export const useStore = create<StoreState>()(
         bigItems: s.bigItems,
         years: s.years,
         socialMonthly: s.socialMonthly,
+        housingFundMonthly: s.housingFundMonthly,
+        savedAmount: s.savedAmount,
         specialDeductions: s.specialDeductions,
       }),
     }
@@ -106,9 +114,23 @@ export function useComputed() {
   const bigItems = useStore((s) => s.bigItems);
   const years = useStore((s) => s.years);
   const socialMonthly = useStore((s) => s.socialMonthly);
+  const housingFundMonthly = useStore((s) => s.housingFundMonthly);
+  const savedAmount = useStore((s) => s.savedAmount);
   const specialDeductions = useStore((s) => s.specialDeductions);
   return useMemo(
-    () => compute({ totalGoal, jobs, assets, expenses, bigItems, years, socialMonthly, specialDeductions }),
-    [totalGoal, jobs, assets, expenses, bigItems, years, socialMonthly, specialDeductions]
+    () =>
+      compute({
+        totalGoal,
+        jobs,
+        assets,
+        expenses,
+        bigItems,
+        years,
+        socialMonthly,
+        housingFundMonthly,
+        savedAmount,
+        specialDeductions,
+      }),
+    [totalGoal, jobs, assets, expenses, bigItems, years, socialMonthly, housingFundMonthly, savedAmount, specialDeductions]
   );
 }
