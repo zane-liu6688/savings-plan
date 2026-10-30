@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>攒钱计划</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#f8fafc;color:#1f2937;font:15px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;padding-bottom:76px}
+  header{background:#4f46e5;color:#fff;padding:14px 16px;font-weight:800;font-size:18px;position:sticky;top:0;z-index:10}
+  main{padding:14px;display:flex;flex-direction:column;gap:14px;max-width:720px;margin:0 auto}
+  .card{background:#fff;border-radius:18px;padding:16px;border-left:5px solid #4f46e5;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .card h2{font-size:16px;margin:0 0 12px;color:#111827}
+  .hero{background:#4f46e5;color:#fff;border-radius:20px;padding:20px;text-align:center}
+  .hero .big{font-size:36px;font-weight:900;margin:6px 0}
+  .hero .sub{opacity:.85;font-size:13px}
+  label{display:block;font-size:12px;font-weight:700;color:#6b7280;margin:8px 0 4px}
+  input,select{width:100%;padding:11px 12px;border:1px solid #e5e7eb;border-radius:10px;font-size:15px;background:#fff;color:#1f2937}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:120px}
+  button{border:0;border-radius:11px;padding:12px 16px;font-size:15px;font-weight:700;color:#fff;background:#4f46e5;cursor:pointer;width:100%}
+  button.green{background:#10b981}button.amber{background:#f59e0b}button.red{background:#f43f5e}button.gray{background:#9ca3af}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .btns button{flex:1;min-width:110px}
+  .item{background:#f9fafb;border-left:4px solid #4f46e5;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .item .t{font-weight:700;font-size:15px;color:#111827}
+  .item .l{font-size:13px;color:#6b7280;margin-top:3px}
+  .item button{width:auto;padding:7px 12px;font-size:13px;background:#f43f5e;border-radius:8px}
+  .res{background:#eff6ff;border-left:4px solid #06b6d4;border-radius:12px;padding:12px;margin-top:12px;font-size:14px}
+  .res.amber{background:#fffbeb;border-color:#f59e0b}.res.green{background:#ecfdf5;border-color:#10b981}
+  .res p{margin:6px 0}
+  .res b{font-weight:800}
+  .bar-wrap{margin:10px 0}
+  .bar-head{display:flex;justify-content:space-between;font-size:13px;color:#6b7280;margin-bottom:5px}
+  .bar{height:10px;background:#f3f4f6;border-radius:6px;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:6px}
+  .note{font-size:12px;color:#6b7280;line-height:1.7;margin:6px 0}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .chip{background:#ecfdf5;color:#065f46;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}
+  nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #e5e7eb;padding-bottom:env(safe-area-inset-bottom)}
+  nav a{flex:1;text-align:center;padding:8px 0 10px;font-size:12px;font-weight:700;color:#6b7280;text-decoration:none}
+  nav a span{display:block;font-size:20px;line-height:1.2}
+  nav a.on{color:#4f46e5}
+  .hide{display:none}
+  .grid-years{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .ybox{flex:1;min-width:140px;background:#ecfdf5;border-radius:12px;padding:12px;text-align:center}
+  .ybox .v{font-size:19px;font-weight:800;color:#10b981}
+</style>
+</head>
+<body>
+<header>攒钱计划</header>
+<main>
+
+<!-- 看板 -->
+<section id="tab-dash">
+  <div class="hero">
+    <div class="sub">今日可自由支配</div>
+    <div class="big" id="disposable">¥0</div>
+    <div class="sub" id="disposableTip"></div>
+  </div>
+
+  <div class="card">
+    <h2>攒钱进度</h2>
+    <label>已经攒了多少（每次存完钱回来改）</label>
+    <input id="savedAmount" type="number" inputmode="decimal" placeholder="例如 20000">
+    <div class="bar-wrap">
+      <div class="bar-head"><span>目标完成度</span><span id="progressPct">0%</span></div>
+      <div class="bar"><i id="progressBar" style="width:0%;background:#10b981"></i></div>
+    </div>
+    <div class="res green" id="progressInfo"></div>
+  </div>
+
+  <div class="card">
+    <h2>每天收支对比</h2>
+    <div id="bars"></div>
+    <div class="note" id="barTip"></div>
+  </div>
+
+  <div class="card">
+    <h2>攒钱进度投影</h2>
+    <div class="res green" id="tiles"></div>
+    <div class="row" style="margin-top:12px">
+      <div><label>添加年份</label><input id="yearInput" placeholder="如 2029"></div>
+      <div style="flex:0 0 auto;align-self:flex-end"><button class="green" id="addYearBtn">添加</button></div>
+    </div>
+    <div class="grid-years" id="years"></div>
+    <div class="res green" id="yearAnalysis"></div>
+  </div>
+</section>
+
+<!-- 收入 -->
+<section id="tab-jobs" class="hide">
+  <div class="hero"><div class="sub">你平均每天能赚</div><div class="big" id="grossDay">¥0</div><div class="sub" id="grossSub"></div></div>
+
+  <div class="card">
+    <h2>收入录入（工资 + 兼职可叠加）</h2>
+    <label>收入来源</label><input id="jobName" placeholder="例：工资 / 兼职">
+    <div class="row">
+      <div><label>类型</label><select id="jobType"><option value="month">按月（月薪）</option><option value="day">按天（日薪）</option></select></div>
+      <div><label>税前金额（元）</label><input id="jobAmount" type="number" inputmode="decimal" placeholder="金额"></div>
+      <div><label>时长</label><input id="jobDuration" type="number" inputmode="numeric" placeholder="月数/天数"></div>
+    </div>
+    <div class="note">收入会变（加班、换工作）？分几段录：1-5月 8000、6-12月 10000，系统会自动加起来算平均每天。</div>
+    <div class="btns"><button id="addJob">添加这笔收入</button></div>
+  </div>
+
+  <div class="card" style="border-left-color:#10b981">
+    <h2>已录入的收入</h2>
+    <div id="jobList"></div>
+    <div class="res green" id="jobSum"></div>
+    <div class="res amber" id="taxRef"></div>
+  </div>
+</section>
+
+<!-- 扣除 -->
+<section id="tab-deduct" class="hide">
+  <div class="card" style="border-left-color:#f59e0b">
+    <h2>五险一金（个人缴纳）</h2>
+    <div class="note">在工资条上找「个人缴纳」合计填进来。这里只用来估算税费参考值，不会自动从收入里扣钱。</div>
+    <label>每月个人缴纳（元）· 留空 = 按 10.5% 估算</label>
+    <input id="socialMonthly" type="number" inputmode="decimal" placeholder="如 840">
+    <label>其中：公积金个人缴纳（元/月）· 这部分仍是你的钱</label>
+    <input id="housingFund" type="number" inputmode="decimal" placeholder="如 400">
+  </div>
+
+  <div class="card" style="border-left-color:#10b981">
+    <h2>个税专项附加扣除</h2>
+    <div class="note">点一下添加常见项目，金额可按需修改。</div>
+    <div class="chips" id="presets"></div>
+    <div class="row" style="margin-top:12px">
+      <div><label>自定义名称</label><input id="dedName" placeholder="如 大病医疗"></div>
+      <div><label>每月金额（元）</label><input id="dedMonthly" type="number" inputmode="decimal" placeholder="金额"></div>
+    </div>
+    <div class="btns"><button class="green" id="addDed">添加</button></div>
+  </div>
+
+  <div class="card">
+    <h2>已添加的扣除</h2>
+    <div id="dedList"></div>
+    <div class="res amber" id="taxCalc"></div>
+  </div>
+</section>
+
+<!-- 生活 -->
+<section id="tab-life" class="hide">
+  <div class="card" style="border-left-color:#10b981">
+    <h2>每月固定生活开销</h2>
+    <div class="note">实际交的个税、五险一金（养老/医疗/失业/公积金）也建议在这里各加一项，App 不会自动扣税，你按真实金额记进来才算得准。</div>
+    <div class="row">
+      <div><label>类目</label><input id="expName" placeholder="例：房租 / 吃饭"></div>
+      <div><label>每月金额（元）</label><input id="expAmount" type="number" inputmode="decimal" placeholder="金额"></div>
+    </div>
+    <div class="btns"><button class="green" id="addExp">添加开销</button></div>
+  </div>
+
+  <div class="card" style="border-left-color:#10b981">
+    <h2>开销明细</h2>
+    <div id="expList"></div>
+    <div class="res green" id="expSum"></div>
+  </div>
+
+  <div class="card" style="border-left-color:#f59e0b">
+    <h2>工作工具成本分摊（可选）</h2>
+    <div class="note">电动车、工作用手机这类为了工作买的东西，可以摊到每天算进成本。</div>
+    <div class="row">
+      <div><label>工具名称</label><input id="toolName" placeholder="例：送外卖电动车"></div>
+      <div><label>总价（元）</label><input id="toolCost" type="number" inputmode="decimal" placeholder="价格"></div>
+      <div><label>分摊天数</label><input id="toolDays" type="number" inputmode="numeric" placeholder="365"></div>
+    </div>
+    <div class="btns"><button class="amber" id="addTool">添加工具成本</button></div>
+    <div id="toolList"></div>
+    <div class="res amber" id="toolSum"></div>
+  </div>
+</section>
+
+<!-- 大件 -->
+<section id="tab-big" class="hide">
+  <div class="card" style="border-left-color:#8b5cf6">
+    <h2>一次性大额消费（分摊到每天）</h2>
+    <div class="row">
+      <div><label>想买的东西</label><input id="bigName" placeholder="例：换新手机"></div>
+      <div><label>总价（元）</label><input id="bigPrice" type="number" inputmode="decimal" placeholder="价格"></div>
+      <div><label>分多少天</label><input id="bigDays" type="number" inputmode="numeric" placeholder="天数"></div>
+    </div>
+    <div class="btns"><button id="addBig" style="background:#8b5cf6">计入大额分期</button></div>
+  </div>
+
+  <div class="card" style="border-left-color:#8b5cf6">
+    <h2>正在分摊的大额消费</h2>
+    <div id="bigList"></div>
+    <div class="res" id="bigSum"></div>
+  </div>
+</section>
+
+<!-- 设置 -->
+<section id="tab-set" class="hide">
+  <div class="card">
+    <h2>长期攒钱总目标</h2>
+    <label>目标金额（元）</label>
+    <input id="totalGoal" type="number" inputmode="decimal" placeholder="例如 100000">
+    <div class="res" id="goalInfo"></div>
+  </div>
+
+  <div class="card" style="border-left-color:#1e3a8a">
+    <h2>备份 / 换设备迁移</h2>
+    <div class="note">
+      网页版数据存在这台设备的浏览器里（换设备、清缓存会丢），请定期导出备份文件保存。<br>
+      坚果云网盘无法被网页直接读写（浏览器跨域限制），所以网页版用「导出/导入文件」；安卓 App 版可以直连坚果云自动同步。
+    </div>
+    <div class="btns">
+      <button id="exportBtn">导出备份文件</button>
+      <button class="gray" id="importBtn">导入备份文件</button>
+    </div>
+    <input id="importFile" type="file" accept="application/json,.json" class="hide">
+    <div class="note" id="backupStatus"></div>
+  </div>
+
+  <div class="card" style="border-left-color:#f43f5e">
+    <h2>重置</h2>
+    <div class="note">清空所有数据，恢复到默认示例。</div>
+    <div class="btns"><button class="red" id="resetBtn">清空并重置</button></div>
+  </div>
+</section>
+
+</main>
+
+<nav>
+  <a href="#" data-tab="dash" class="on"><span>📊</span>看板</a>
+  <a href="#" data-tab="jobs"><span>💰</span>收入</a>
+  <a href="#" data-tab="deduct"><span>🧾</span>扣除</a>
+  <a href="#" data-tab="life"><span>🏠</span>生活</a>
+  <a href="#" data-tab="big"><span>🛒</span>大件</a>
+  <a href="#" data-tab="set"><span>⚙️</span>设置</a>
+</nav>
+
+<script>
+/* ============ 配置（中国版） ============ */
+const CFG = {
+  storeKey: 'cunqian_web_v1',
+  currency: '¥',
+  basicDeduction: 60000,
+  socialRate: 0.105,
+  presets: [
+    ['住房租金', 1500], ['住房贷款利息', 1000], ['子女教育', 2000],
+    ['赡养老人', 3000], ['继续教育', 400], ['婴幼儿照护', 2000],
+  ],
+  taxBrackets: [
+    [36000, 0.03, 0], [144000, 0.10, 2520], [300000, 0.20, 16920],
+    [420000, 0.25, 31920], [660000, 0.30, 52920], [960000, 0.35, 85920],
+    [Infinity, 0.45, 181920],
+  ],
+};
+
+/* ============ 工具 ============ */
+const $ = (id) => document.getElementById(id);
+const money = (n) => {
+  const neg = n < 0 ? '-' : '';
+  return neg + CFG.currency + Math.abs(n).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+const pct = (v, base) => (base > 0 ? Math.max(0, (v / base) * 100).toFixed(0) : '0');
+const num = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ============ 状态 ============ */
+const defaultState = () => ({
+  totalGoal: 100000,
+  jobs: [{ id: uid(), name: '主职工资', type: 'month', amount: 8000, duration: 12 }],
+  assets: [],
+  expenses: [
+    { id: uid(), name: '房租', amount: 2000 },
+    { id: uid(), name: '吃饭买菜', amount: 1500 },
+    { id: uid(), name: '交通话费', amount: 300 },
+  ],
+  bigItems: [{ id: uid(), name: '换新手机', price: 3000, days: 120 }],
+  years: [{ id: uid(), label: '2026' }, { id: uid(), label: '2027' }, { id: uid(), label: '2028' }],
+  socialMonthly: 0,
+  housingFundMonthly: 0,
+  savedAmount: 0,
+  specialDeductions: [{ id: uid(), name: '住房租金', monthly: 1500 }],
+});
+
+let S = load();
+function load() {
+  try {
+    const raw = localStorage.getItem(CFG.storeKey);
+    if (raw) return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) {}
+  return defaultState();
+}
+function save() {
+  try { localStorage.setItem(CFG.storeKey, JSON.stringify(S)); } catch (e) { toast('保存失败：浏览器存储已满或被禁用'); }
+}
+
+/* ============ 计算 ============ */
+function calcTax(taxable) {
+  if (taxable <= 0) return 0;
+  const b = CFG.taxBrackets.find((x) => taxable <= x[0]) || CFG.taxBrackets[CFG.taxBrackets.length - 1];
+  return Math.max(0, taxable * b[1] - b[2]);
+}
+function compute() {
+  const grossYear = S.jobs.reduce((a, j) => a + j.amount * j.duration, 0);
+  const autoSocial = (grossYear / 12) * CFG.socialRate;
+  const socialYear = (S.socialMonthly > 0 ? S.socialMonthly : autoSocial) * 12;
+  const specialYear = S.specialDeductions.reduce((a, d) => a + d.monthly * 12, 0);
+  const deductionYear = socialYear + specialYear;
+  const taxableYear = Math.max(0, grossYear - CFG.basicDeduction - deductionYear);
+  const taxRefYear = calcTax(taxableYear);
+  const netRefYear = Math.max(0, grossYear - deductionYear - taxRefYear);
+  const housingFundYear = Math.min(S.housingFundMonthly, S.socialMonthly > 0 ? S.socialMonthly : autoSocial) * 12;
+
+  const grossMonth = grossYear / 12, grossDay = grossYear / 365;
+  const totalExpMonth = S.expenses.reduce((a, e) => a + e.amount, 0);
+  const totalExpDay = (totalExpMonth * 12) / 365;
+  const toolDay = S.assets.reduce((a, x) => a + x.cost / (x.days > 0 ? x.days : 1), 0);
+  const bigDay = S.bigItems.reduce((a, x) => a + x.price / (x.days > 0 ? x.days : 1), 0);
+
+  const expDay = totalExpDay + toolDay + bigDay;
+  const surplusDay = grossDay - expDay;
+  const goalYears = S.years.length > 0 ? S.years.length : 3;
+  const goalDays = goalYears * 365;
+  const goalDay = goalDays > 0 ? S.totalGoal / goalDays : 0;
+  const disposable = surplusDay - goalDay;
+
+  const remaining = Math.max(0, S.totalGoal - S.savedAmount);
+  const progress = S.totalGoal > 0 ? Math.min(1, S.savedAmount / S.totalGoal) : 0;
+  const daysToGoal = remaining <= 0 ? 0 : surplusDay > 0 ? remaining / surplusDay : -1;
+  const emergencyMonths = totalExpMonth > 0 ? S.savedAmount / totalExpMonth : 0;
+
+  return {
+    grossYear, grossMonth, grossDay, socialYear, specialYear, deductionYear, taxableYear,
+    taxRefYear, netRefYear, netRefMonth: netRefYear / 12, housingFundYear,
+    totalExpMonth, totalExpDay, toolDay, bigDay, expDay, surplusDay,
+    goalYears, goalDays, goalDay, disposable, remaining, progress, daysToGoal, emergencyMonths,
+  };
+}
+
+/* ============ 渲染 ============ */
+function render() {
+  const r = compute();
+
+  // 看板
+  $('disposable').textContent = money(r.disposable);
+  $('disposable').style.color = r.disposable >= 0 ? '#10b981' : '#f43f5e';
+  $('disposableTip').textContent = r.disposable >= 0
+    ? `先存够今天该存的 ${money(r.goalDay)}，还能自由花 ${money(r.disposable)}`
+    : `每天实际只能攒 ${money(r.surplusDay)}，距目标每天还差 ${money(Math.abs(r.disposable))}`;
+
+  $('progressPct').textContent = (r.progress * 100).toFixed(0) + '%';
+  $('progressBar').style.width = (r.progress * 100).toFixed(0) + '%';
+  $('progressInfo').innerHTML = `
+    <p>已攒 <b>${money(S.savedAmount)}</b> / 目标 ${money(S.totalGoal)}，还差 <b style="color:#e11d48">${money(r.remaining)}</b></p>
+    <p>按现在的速度：${r.remaining <= 0 ? '🎉 已经达成目标了' : r.daysToGoal < 0 ? '每天攒不下钱，先压缩开销' : `还要 <b>${Math.ceil(r.daysToGoal)}</b> 天（约 ${(r.daysToGoal / 30.4).toFixed(1)} 个月）`}</p>
+    <p class="note">应急金建议：至少留 ${money(r.totalExpMonth * 3)}（3 个月生活费），你现在够 ${r.emergencyMonths.toFixed(1)} 个月。</p>`;
+
+  const bars = [
+    ['每天收入（基准）', r.grossDay, '#4f46e5', money(r.grossDay)],
+    ['每天花销合计', r.expDay, '#f43f5e', `${money(r.expDay)} · 占收入 ${pct(r.expDay, r.grossDay)}%`],
+    ['每天要存的目标', r.goalDay, '#f59e0b', `${money(r.goalDay)} · 占收入 ${pct(r.goalDay, r.grossDay)}%`],
+    ['每天能剩下', Math.max(0, r.disposable), '#10b981', `${money(r.disposable)} (${pct(r.disposable, r.grossDay)}%)`],
+  ];
+  $('bars').innerHTML = bars.map(([label, val, color, text]) => `
+    <div class="bar-wrap">
+      <div class="bar-head"><span>${label}</span><span style="color:${color};font-weight:800">${text}</span></div>
+      <div class="bar"><i style="width:${Math.min(100, r.grossDay > 0 ? (val / r.grossDay) * 100 : 0)}%;background:${color}"></i></div>
+    </div>`).join('');
+  $('barTip').textContent = r.expDay + r.goalDay > r.grossDay
+    ? '⚠️ 花销 + 攒钱目标已经超过每天收入了，这天会倒亏，得压缩开销或加收入。'
+    : '✅ 花销和攒钱目标都在每天收入之内，不会花超。';
+
+  $('tiles').innerHTML = `<p>每天攒下 <b>${money(r.surplusDay)}</b> ｜ 每周 <b>${money(r.surplusDay * 7)}</b> ｜ 每月 <b>${money(r.surplusDay * 30.4167)}</b></p>`;
+
+  $('years').innerHTML = S.years.map((y, i) => `
+    <div class="ybox">
+      <div style="font-size:13px;color:#374151;font-weight:700">${esc(y.label)} 年底</div>
+      <div class="v">${money(r.surplusDay * 365 * (i + 1))}</div>
+      <div style="font-size:11px;color:#6b7280">持续第 ${i + 1} 年</div>
+      <button class="red" style="margin-top:8px;padding:5px 10px;font-size:12px" onclick="delYear('${y.id}')">删除</button>
+    </div>`).join('') || '<div class="note">暂无年份</div>';
+
+  if (S.years.length > 0) {
+    const last = S.years.length, final = r.surplusDay * 365 * last;
+    const ok = final >= S.totalGoal;
+    $('yearAnalysis').innerHTML = ok
+      ? `<p>到 <b>${esc(S.years[last - 1].label)}年</b> 底（攒 ${last} 年），预计攒下 <b>${money(final)}</b>，超过目标 ${money(final - S.totalGoal)}。</p>`
+      : `<p>到 <b>${esc(S.years[last - 1].label)}年</b> 底（攒 ${last} 年），累计约 <b>${money(final)}</b>，距目标还差 <b style="color:#e11d48">${money(S.totalGoal - final)}</b>。</p>`;
+  } else { $('yearAnalysis').innerHTML = ''; }
+
+  // 收入
+  $('grossDay').textContent = money(r.grossDay);
+  $('grossSub').textContent = `全年 ${money(r.grossYear)} 摊到 365 天 · 每月 ${money(r.grossMonth)}`;
+  $('jobList').innerHTML = S.jobs.map((j) => {
+    const unit = j.type === 'month' ? '月' : '天';
+    return `<div class="item"><div><div class="t">${esc(j.name)}</div>
+      <div class="l">${money(j.amount)}/${unit} × ${j.duration}${unit}</div>
+      <div class="l">税前合计 ${money(j.amount * j.duration)}</div></div>
+      <button onclick="delJob('${j.id}')">删除</button></div>`;
+  }).join('') || '<div class="note">还没有添加收入</div>';
+
+  $('jobSum').innerHTML = `
+    <p>💼 全年总收入：<b>${money(r.grossYear)}</b></p>
+    <p>📅 平均每月收入：<b>${money(r.grossMonth)}</b></p>
+    <p>🔹 摊平每天收入：<b>${money(r.grossDay)}</b></p>`;
+
+  $('taxRef').innerHTML = `
+    <p><b>💡 下面是预估税费，随便看看就行</b></p>
+    <p>五险一金（预估）：${money(r.socialYear)}　其中公积金 ${money(r.housingFundYear)}（仍是你的钱）</p>
+    <p>专项附加扣除：${money(r.specialYear)}</p>
+    <p>个税（预估，全年）：<b style="color:#e11d48">${money(r.taxRefYear)}</b>　预估税后每月：${money(r.netRefMonth)}</p>
+    <p class="note">这些数字按公开税率粗算，收入变了它跟着变。估得不准也没关系——它一分钱都不会影响你的攒钱计算。真实被扣了多少，去「生活」页照实填一项开销。</p>`;
+
+  // 扣除
+  $('presets').innerHTML = CFG.presets.map(([n, m]) =>
+    `<div class="chip" onclick="addPreset('${n}', ${m})">${n} ${money(m)}/月</div>`).join('');
+  $('dedList').innerHTML = S.specialDeductions.map((d) => `
+    <div class="item"><div><div class="t">${esc(d.name)}</div>
+    <div class="l">每月 ${money(d.monthly)} → 全年 ${money(d.monthly * 12)}</div></div>
+    <button onclick="delDed('${d.id}')">删除</button></div>`).join('') || '<div class="note">还没有添加</div>';
+
+  $('taxCalc').innerHTML = `
+    <p><b>💡 以下是参考值，不参与攒钱计算</b></p>
+    <p>每月扣除合计：${money(r.socialYear / 12 + r.specialYear / 12)}</p>
+    <p>全年扣除合计：${money(r.deductionYear)}</p>
+    <p>起征点：${money(CFG.basicDeduction)}/年</p>
+    <p>应纳税所得额：<b>${money(r.taxableYear)}</b></p>
+    <p>参考个税（全年）：<b style="color:#e11d48">${money(r.taxRefYear)}</b></p>
+    <p>参考税后（每月）：${money(r.netRefMonth)}</p>`;
+
+  // 生活
+  $('expList').innerHTML = S.expenses.map((e) => `
+    <div class="item"><div><div class="t">${esc(e.name)}</div>
+    <div class="l">每月 ${money(e.amount)} → 全年 ${money(e.amount * 12)}</div>
+    <div class="l">占每月开销 ${pct(e.amount, r.totalExpMonth)}%</div></div>
+    <button onclick="delExp('${e.id}')">删除</button></div>`).join('') || '<div class="note">还没有添加开销</div>';
+
+  $('expSum').innerHTML = `
+    <p>每月固定支出：<b>${money(r.totalExpMonth)}</b>　全年：<b>${money(r.totalExpMonth * 12)}</b></p>
+    <p>平摊每天：<b style="color:#e11d48">${money(r.totalExpDay)}</b>　占日收入 ${pct(r.totalExpDay, r.grossDay)}%</p>`;
+
+  $('toolList').innerHTML = S.assets.map((a) => `
+    <div class="item" style="border-left-color:#f59e0b"><div><div class="t">${esc(a.name)}</div>
+    <div class="l">总价 ${money(a.cost)} / ${a.days}天 · 每天 ${money(a.cost / (a.days || 1))}</div></div>
+    <button onclick="delTool('${a.id}')">删除</button></div>`).join('');
+  $('toolSum').innerHTML = `<p>工具每日摊销：<b>${money(r.toolDay)}</b></p>`;
+
+  // 大件
+  $('bigList').innerHTML = S.bigItems.map((b) => `
+    <div class="item" style="border-left-color:#8b5cf6"><div><div class="t">${esc(b.name)}</div>
+    <div class="l">总价 ${money(b.price)} / ${b.days}天 · 每天 ${money(b.price / (b.days || 1))}</div>
+    <div class="l">相当于每天收入的 ${pct(b.price / (b.days || 1), r.grossDay)}%</div></div>
+    <button onclick="delBig('${b.id}')">删除</button></div>`).join('') || '<div class="note">还没有大额分期</div>';
+
+  const bigTotal = r.bigDay;
+  $('bigSum').innerHTML = `
+    <p>所有大件每天合计：<b style="color:#e11d48">${money(bigTotal)}</b>（每月 ${money(bigTotal * 30.4167)}）</p>
+    <p>你每天能赚：<b>${money(r.grossDay)}</b>　占比 <b>${pct(bigTotal, r.grossDay)}%</b></p>
+    <p class="note">${r.grossDay <= 0 ? '先去「收入」页填月薪，这里才能算占比。'
+      : Number(pct(bigTotal, r.grossDay)) > 30
+        ? '⚠️ 大件分期吃掉日收入三成以上，加上生活费和攒钱目标容易倒亏，建议把分摊天数拉长。'
+        : '✅ 大件分期压力可控，想更轻松就把天数填大一点。'}</p>`;
+
+  // 设置
+  $('goalInfo').innerHTML = `
+    <p>平摊基准 <b>${r.goalDays} 天</b>（365×${r.goalYears}）${S.years.length === 0 ? ' · 未添加年份，按默认 3 年算' : ` · 共 ${S.years.length} 个年份`}</p>
+    <p>每天必须攒下：<b style="color:#e11d48">${money(r.goalDay)}</b></p>
+    <p class="note">年份数量决定平摊天数：几个年份就是 365×几。</p>`;
+
+  // 输入框回填（避免打断用户输入）
+  const setVal = (id, v) => { const el = $(id); if (el && document.activeElement !== el) el.value = v; };
+  setVal('savedAmount', S.savedAmount || '');
+  setVal('socialMonthly', S.socialMonthly || '');
+  setVal('housingFund', S.housingFundMonthly || '');
+  setVal('totalGoal', S.totalGoal || '');
+}
+
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+function toast(msg) { $('backupStatus').textContent = msg; }
+
+/* ============ 交互 ============ */
+$('addJob').onclick = () => {
+  const name = $('jobName').value.trim() || '未命名收入';
+  const amount = num($('jobAmount').value), duration = parseInt($('jobDuration').value, 10);
+  if (amount <= 0 || !duration || duration <= 0) return alert('请填写金额和时长');
+  S.jobs.push({ id: uid(), name, type: $('jobType').value, amount, duration });
+  $('jobName').value = ''; $('jobAmount').value = ''; $('jobDuration').value = '';
+  save(); render();
+};
+$('addExp').onclick = () => {
+  const amount = num($('expAmount').value);
+  if (amount <= 0) return alert('请填写金额');
+  S.expenses.push({ id: uid(), name: $('expName').value.trim() || '生活杂项', amount });
+  $('expName').value = ''; $('expAmount').value = '';
+  save(); render();
+};
+$('addTool').onclick = () => {
+  const cost = num($('toolCost').value), days = parseInt($('toolDays').value, 10) || 365;
+  if (cost <= 0) return alert('请填写总价');
+  S.assets.push({ id: uid(), name: $('toolName').value.trim() || '工作工具', cost, days });
+  $('toolName').value = ''; $('toolCost').value = ''; $('toolDays').value = '';
+  save(); render();
+};
+$('addBig').onclick = () => {
+  const price = num($('bigPrice').value), days = parseInt($('bigDays').value, 10);
+  if (price <= 0 || !days || days <= 0) return alert('请填写总价和天数');
+  S.bigItems.push({ id: uid(), name: $('bigName').value.trim() || '大件', price, days });
+  $('bigName').value = ''; $('bigPrice').value = ''; $('bigDays').value = '';
+  save(); render();
+};
+$('addDed').onclick = () => {
+  const monthly = num($('dedMonthly').value), name = $('dedName').value.trim();
+  if (!name || monthly <= 0) return alert('请填写名称和金额');
+  S.specialDeductions.push({ id: uid(), name, monthly });
+  $('dedName').value = ''; $('dedMonthly').value = '';
+  save(); render();
+};
+$('addYearBtn').onclick = () => {
+  const label = $('yearInput').value.trim();
+  if (!label) return alert('请输入年份，如 2029');
+  S.years.push({ id: uid(), label });
+  $('yearInput').value = '';
+  save(); render();
+};
+
+function addPreset(name, monthly) {
+  if (S.specialDeductions.some((d) => d.name === name)) return alert('已经添加过了');
+  S.specialDeductions.push({ id: uid(), name, monthly });
+  save(); render();
+}
+function delJob(id) { S.jobs = S.jobs.filter((x) => x.id !== id); save(); render(); }
+function delExp(id) { S.expenses = S.expenses.filter((x) => x.id !== id); save(); render(); }
+function delTool(id) { S.assets = S.assets.filter((x) => x.id !== id); save(); render(); }
+function delBig(id) { S.bigItems = S.bigItems.filter((x) => x.id !== id); save(); render(); }
+function delDed(id) { S.specialDeductions = S.specialDeductions.filter((x) => x.id !== id); save(); render(); }
+function delYear(id) { S.years = S.years.filter((x) => x.id !== id); save(); render(); }
+window.delJob = delJob; window.delExp = delExp; window.delTool = delTool;
+window.delBig = delBig; window.delDed = delDed; window.delYear = delYear;
+window.addPreset = addPreset;
+
+// 数值输入即时保存
+[['savedAmount', 'savedAmount'], ['socialMonthly', 'socialMonthly'], ['housingFund', 'housingFundMonthly'], ['totalGoal', 'totalGoal']]
+  .forEach(([id, key]) => {
+    $(id).addEventListener('input', () => { S[key] = num($(id).value); save(); render(); });
+  });
+
+// 导出 / 导入
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `攒钱计划备份-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出备份文件，请保存到手机/网盘');
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = (ev) => {
+  const f = ev.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      if (!Array.isArray(d.jobs)) throw 0;
+      S = Object.assign(defaultState(), d);
+      save(); render();
+      toast('导入成功，已恢复备份');
+    } catch (e) { toast('导入失败：文件格式不对'); }
+  };
+  reader.readAsText(f);
+  ev.target.value = '';
+};
+$('resetBtn').onclick = () => {
+  if (!confirm('确定清空所有数据并恢复默认示例？')) return;
+  S = defaultState(); save(); render(); toast('已重置');
+};
+
+// 底部导航
+document.querySelectorAll('nav a').forEach((a) => {
+  a.onclick = (e) => {
+    e.preventDefault();
+    const t = a.dataset.tab;
+    document.querySelectorAll('nav a').forEach((x) => x.classList.toggle('on', x === a));
+    ['dash', 'jobs', 'deduct', 'life', 'big', 'set'].forEach((k) => {
+      $('tab-' + k).classList.toggle('hide', k !== t);
+    });
+    window.scrollTo(0, 0);
+  };
+});
+
+render();
+</script>
+</body>
+</html>
